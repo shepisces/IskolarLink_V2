@@ -182,13 +182,13 @@ export async function apiRegister(
 
 export async function apiGetUser(id: string): Promise<ApiUser> {
   const r = await jsonFetch<{ ok: boolean; user: ApiUser }>(
-    `/users/get.php?id=${encodeURIComponent(id)}`
+    `/users/show?id=${encodeURIComponent(id)}`
   );
   return r.user;
 }
 
 export async function apiListUsers(): Promise<ApiUser[]> {
-  const r = await jsonFetch<{ ok: boolean; users: ApiUser[] }>('/users/list.php');
+  const r = await jsonFetch<{ ok: boolean; users: ApiUser[] }>('/users');
   return r.users;
 }
 
@@ -200,7 +200,7 @@ export async function apiUpdateUser(
     profile?: any;
   }
 ): Promise<ApiUser> {
-  const r = await jsonFetch<{ ok: boolean; user: ApiUser }>('/users/update.php', {
+  const r = await jsonFetch<{ ok: boolean; user: ApiUser }>('/users/update', {
     method: 'POST',
     body: JSON.stringify({
       id,
@@ -211,14 +211,14 @@ export async function apiUpdateUser(
 }
 
 export async function apiListScholarships(): Promise<ApiScholarship[]> {
-  const r = await jsonFetch<{ ok: boolean; scholarships: ApiScholarship[] }>('/scholarships/list.php');
+  const r = await jsonFetch<{ ok: boolean; scholarships: ApiScholarship[] }>('/scholarships');
   return r.scholarships;
 }
 
 export async function apiCreateScholarship(
   scholarship: Omit<ApiScholarship, 'id'>
 ): Promise<ApiScholarship> {
-  const r = await jsonFetch<{ ok: boolean; scholarship: ApiScholarship }>('/scholarships/create.php', {
+  const r = await jsonFetch<{ ok: boolean; scholarship: ApiScholarship }>('/scholarships', {
     method: 'POST',
     body: JSON.stringify(scholarship),
   });
@@ -229,7 +229,7 @@ export async function apiUpdateScholarship(
   id: string,
   updates: Partial<Omit<ApiScholarship, 'id'>>
 ): Promise<ApiScholarship> {
-  const r = await jsonFetch<{ ok: boolean; scholarship: ApiScholarship }>('/scholarships/update.php', {
+  const r = await jsonFetch<{ ok: boolean; scholarship: ApiScholarship }>('/scholarships/update', {
     method: 'POST',
     body: JSON.stringify({ id, ...updates }),
   });
@@ -237,25 +237,25 @@ export async function apiUpdateScholarship(
 }
 
 export async function apiDeleteScholarship(id: string, adminId?: string): Promise<void> {
-  await jsonFetch<{ ok: boolean }>('/scholarships/delete.php', {
+  await jsonFetch<{ ok: boolean }>('/scholarships/delete', {
     method: 'POST',
     body: JSON.stringify({ id, adminId }),
   });
 }
 
 export async function apiListScholarshipHistory(): Promise<ApiScholarshipHistory[]> {
-  const r = await jsonFetch<{ ok: boolean; history: ApiScholarshipHistory[] }>('/scholarships/history.php');
+  const r = await jsonFetch<{ ok: boolean; history: ApiScholarshipHistory[] }>('/scholarships/history');
   return r.history;
 }
 
 export async function apiListApplications(): Promise<ApiApplication[]> {
-  const r = await jsonFetch<{ ok: boolean; applications: ApiApplication[] }>('/applications/list.php');
+  const r = await jsonFetch<{ ok: boolean; applications: ApiApplication[] }>('/applications');
   return r.applications;
 }
 
 export async function apiListStudentApplicationHistory(studentId: string): Promise<ApiStudentApplicationHistory[]> {
   const r = await jsonFetch<{ ok: boolean; history: ApiStudentApplicationHistory[] }>(
-    `/applications/history.php?studentId=${encodeURIComponent(studentId)}`
+    `/applications/history?studentId=${encodeURIComponent(studentId)}`
   );
   return r.history;
 }
@@ -266,7 +266,7 @@ export async function apiCreateApplication(payload: {
   documents: any[];
   answers: Record<string, string>;
 }): Promise<ApiApplication> {
-  const r = await jsonFetch<{ ok: boolean; application: ApiApplication }>('/applications/create.php', {
+  const r = await jsonFetch<{ ok: boolean; application: ApiApplication }>('/applications', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -280,7 +280,7 @@ export async function apiUpdateApplicationStatus(payload: {
   author?: string;
   rubric?: any;
 }): Promise<ApiApplication> {
-  const r = await jsonFetch<{ ok: boolean; application: ApiApplication }>('/applications/update_status.php', {
+  const r = await jsonFetch<{ ok: boolean; application: ApiApplication }>('/applications/status', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -288,7 +288,7 @@ export async function apiUpdateApplicationStatus(payload: {
 }
 
 export async function apiListAnnouncements(): Promise<ApiAnnouncement[]> {
-  const r = await jsonFetch<{ ok: boolean; announcements: ApiAnnouncement[] }>('/announcements/list.php');
+  const r = await jsonFetch<{ ok: boolean; announcements: ApiAnnouncement[] }>('/announcements');
   return r.announcements;
 }
 
@@ -302,7 +302,7 @@ export async function apiCreateAnnouncement(
   payload: Omit<ApiAnnouncement, 'id' | 'date'>
 ): Promise<{ announcement: ApiAnnouncement; notify?: ApiNotifyStats }> {
   const r = await jsonFetch<{ ok: boolean; announcement: ApiAnnouncement; notify?: ApiNotifyStats }>(
-    '/announcements/create.php',
+    '/announcements',
     {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -318,7 +318,7 @@ export async function apiUpdateAnnouncement(payload: {
   targetAudience: string;
   category?: 'general';
 }): Promise<ApiAnnouncement> {
-  const r = await jsonFetch<{ ok: boolean; announcement: ApiAnnouncement }>('/announcements/update.php', {
+  const r = await jsonFetch<{ ok: boolean; announcement: ApiAnnouncement }>('/announcements/update', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -326,19 +326,19 @@ export async function apiUpdateAnnouncement(payload: {
 }
 
 export async function apiDeleteAnnouncement(id: string): Promise<void> {
-  await jsonFetch<{ ok: boolean }>('/announcements/delete.php', {
+  await jsonFetch<{ ok: boolean }>('/announcements/delete', {
     method: 'POST',
     body: JSON.stringify({ id }),
   });
 }
 
 export async function apiListNotifications(): Promise<ApiNotification[]> {
-  const r = await jsonFetch<{ ok: boolean; notifications: ApiNotification[] }>('/notifications/list.php');
+  const r = await jsonFetch<{ ok: boolean; notifications: ApiNotification[] }>('/notifications');
   return r.notifications;
 }
 
 export async function apiCreateNotification(payload: Omit<ApiNotification, 'id' | 'date' | 'read'>): Promise<ApiNotification> {
-  const r = await jsonFetch<{ ok: boolean; notification: ApiNotification }>('/notifications/create.php', {
+  const r = await jsonFetch<{ ok: boolean; notification: ApiNotification }>('/notifications', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -346,7 +346,7 @@ export async function apiCreateNotification(payload: Omit<ApiNotification, 'id' 
 }
 
 export async function apiMarkNotificationRead(id: string): Promise<void> {
-  await jsonFetch<{ ok: boolean }>('/notifications/mark_read.php', {
+  await jsonFetch<{ ok: boolean }>('/notifications/mark-read', {
     method: 'POST',
     body: JSON.stringify({ id }),
   });
@@ -358,7 +358,7 @@ export type ChatGroqMessage = {
 };
 
 export async function apiChatGroq(messages: ChatGroqMessage[]): Promise<string> {
-  const r = await jsonFetch<{ ok: boolean; message: string }>('/chat/groq.php', {
+  const r = await jsonFetch<{ ok: boolean; message: string }>('/chat/groq', {
     method: 'POST',
     body: JSON.stringify({ messages }),
   });
