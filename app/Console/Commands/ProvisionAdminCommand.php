@@ -8,30 +8,35 @@ use Illuminate\Console\Command;
 class ProvisionAdminCommand extends Command
 {
     protected $signature = 'iskolarlink:provision-admin
+                            {--email= : Admin email (overrides ISKOLARLINK_ADMIN_EMAIL)}
+                            {--password= : Admin password (overrides ISKOLARLINK_ADMIN_PASSWORD)}
+                            {--password-hash= : Bcrypt hash (overrides ISKOLARLINK_ADMIN_PASSWORD_HASH)}
+                            {--name= : Admin name (overrides ISKOLARLINK_ADMIN_NAME)}
+                            {--id= : Admin user id (overrides ISKOLARLINK_ADMIN_ID, default admin-1)}
                             {--force : Run in production without confirmation}';
 
-    protected $description = 'Create or update the production admin user from environment variables';
+    protected $description = 'Create or update the production admin user from CLI options or environment variables';
 
     public function handle(): int
     {
-        $email = $this->adminSetting('admin_email');
-        $name = $this->adminSetting('admin_name') ?: 'Administrator';
-        $id = $this->adminSetting('admin_id') ?: 'admin-1';
-        $password = $this->adminSetting('admin_password');
-        $passwordHash = $this->adminSetting('admin_password_hash');
+        $email = (string) ($this->option('email') ?: $this->adminSetting('admin_email'));
+        $name = (string) ($this->option('name') ?: $this->adminSetting('admin_name') ?: 'Administrator');
+        $id = (string) ($this->option('id') ?: $this->adminSetting('admin_id') ?: 'admin-1');
+        $password = $this->option('password') ?: $this->adminSetting('admin_password');
+        $passwordHash = $this->option('password-hash') ?: $this->adminSetting('admin_password_hash');
 
         if ($email === '') {
-            $this->error('Missing ISKOLARLINK_ADMIN_EMAIL.');
-            $this->line('Add it under Laravel Cloud → Environment → Custom environment variables, then Save.');
-            $this->line('If you already added it, redeploy or run: php artisan config:clear');
-            $this->line('Values with # must be quoted, e.g. ISKOLARLINK_ADMIN_PASSWORD="#nemsu_2026!"');
+            $this->error('Missing admin email.');
+            $this->line('Use --email=admin@nemsu.edu.ph or set ISKOLARLINK_ADMIN_EMAIL in Laravel Cloud custom variables.');
+            $this->line('Example (works even when env vars are not loaded):');
+            $this->line('  php artisan iskolarlink:provision-admin --force --email=admin@nemsu.edu.ph --password=\'#nemsu_2026!\' --name="Admin Director"');
 
             return self::FAILURE;
         }
 
-        if ($password === '' && $passwordHash === '') {
-            $this->error('Missing ISKOLARLINK_ADMIN_PASSWORD or ISKOLARLINK_ADMIN_PASSWORD_HASH.');
-            $this->line('Quote passwords that contain # : ISKOLARLINK_ADMIN_PASSWORD="#your-password"');
+        if (! $password && ! $passwordHash) {
+            $this->error('Missing admin password.');
+            $this->line('Use --password=... or --password-hash=... or ISKOLARLINK_ADMIN_PASSWORD in Cloud env.');
 
             return self::FAILURE;
         }
@@ -51,22 +56,14 @@ class ProvisionAdminCommand extends Command
             'created_at' => $user->created_at ?? now(),
         ]);
 
-        $user->password = $passwordHash !== '' ? $passwordHash : $password;
+        $user->password = $passwordHash ? (string) $passwordHash : (string) $password;
         $user->save();
 
         $this->info("Admin ready: {$email} (id: {$user->id})");
-        $this->line('Log in on production with that email and your admin password.');
-
-        if ($passwordHash !== '') {
-            $this->comment('Used ISKOLARLINK_ADMIN_PASSWORD_HASH.');
-        }
 
         return self::SUCCESS;
     }
 
-    /**
-     * Read admin settings after config:cache (env() alone is empty on Laravel Cloud).
-     */
     private function adminSetting(string $key): string
     {
         $envKeys = [
@@ -79,18 +76,28 @@ class ProvisionAdminCommand extends Command
 
         $envKey = $envKeys[$key] ?? strtoupper($key);
 
-        $fromEnv = getenv($envKey);
-        if (is_string($fromEnv) && $fromEnv !== '') {
-            return $fromEnv;
-        }
-
-        $fromServer = $_ENV[$envKey] ?? $_SERVER[$envKey] ?? null;
-        if (is_string($fromServer) && $fromServer !== '') {
-            return $fromServer;
+        foreach ([getenv($envKey), $_ENV[$envKey] ?? null, $_SERVER[$envKey] ?? null] as $value) {
+            if (is_string($value) && $value !== '') {
+                return $this->stripEnvQuotes($value);
+            }
         }
 
         $value = config("iskolarlink.{$key}");
 
-        return is_string($value) ? $value : '';
+        return is_string($value) ? $this->stripEnvQuotes($value) : '';
+    }
+
+    private function stripEnvQuotes(string $value): string
+    {
+        $value = trim($value);
+
+        if (
+            (str_starts_with($value, '"') && str_ends_with($value, '"'))
+            || (str_starts_with($value, "'") && str_ends_with($value, "'"))
+        ) {
+            return substr($value, 1, -1);
+        }
+
+        return $value;
     }
 }
