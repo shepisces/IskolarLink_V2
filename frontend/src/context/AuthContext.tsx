@@ -2,7 +2,7 @@ import React, { useEffect, useState, createContext, useContext } from 'react';
 import { User } from '../types';
 import { useData } from './DataContext';
 import { toast } from 'sonner';
-import { apiGetUser, apiLogin, apiRegister, setApiToken } from '../lib/api';
+import { apiGetUser, apiLogin, apiLogout, apiRegister, setApiToken } from '../lib/api';
 import { APP_NAME } from '../lib/branding';
 interface AuthContextType {
   user: User | null;
@@ -70,10 +70,11 @@ export function AuthProvider({ children }: {children: ReactNode;}) {
     }
   };
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('iskolarlink_user_id');
-    setApiToken(null);
-    toast.info('Logged out successfully');
+    void apiLogout().finally(() => {
+      setUser(null);
+      localStorage.removeItem('iskolarlink_user_id');
+      toast.info('Logged out successfully');
+    });
   };
   return (
     <AuthContext.Provider

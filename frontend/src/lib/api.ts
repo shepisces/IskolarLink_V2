@@ -51,10 +51,18 @@ async function jsonFetch<T>(
 
   const data = await res.json().catch(() => null);
   if (!res.ok) {
-    const msg =
+    let msg =
       (data && (data.error || data.message)) ||
       (typeof data === 'string' ? data : null) ||
       `Request failed (${res.status})`;
+
+    if (data?.errors && typeof data.errors === 'object') {
+      const firstField = Object.values(data.errors as Record<string, string[]>)[0];
+      if (Array.isArray(firstField) && firstField[0]) {
+        msg = firstField[0];
+      }
+    }
+
     throw new Error(msg);
   }
   return data as T;
@@ -160,6 +168,14 @@ export async function apiLogin(email: string, password: string): Promise<ApiUser
     setApiToken(r.token);
   }
   return r.user;
+}
+
+export async function apiLogout(): Promise<void> {
+  try {
+    await jsonFetch<{ ok: boolean }>('/auth/logout', { method: 'POST' });
+  } finally {
+    setApiToken(null);
+  }
 }
 
 export async function apiRegister(
