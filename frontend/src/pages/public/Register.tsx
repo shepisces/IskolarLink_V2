@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { APP_LOGO, APP_NAME } from '../../lib/branding';
-const HERO_BG = '/assets/images/landingpagebackground.png';
+import { APP_LOGO, APP_NAME, HERO_BACKGROUND } from '../../lib/branding';
 
 type TextFieldProps = {
   label: string;
@@ -119,7 +118,7 @@ export function Register() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${HERO_BG})`
+          backgroundImage: `url(${HERO_BACKGROUND})`
         }}
         aria-hidden="true" />
       

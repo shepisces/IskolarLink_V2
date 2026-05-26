@@ -9,9 +9,7 @@ import {
 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui';
-import { APP_LOGO, APP_NAME } from '../../lib/branding';
-const HERO_BG = '/assets/images/landingpagebackground.png';
-const FOOTER_LOGO = APP_LOGO;
+import { APP_LOGO, APP_NAME, FOOTER_LOGO, HERO_BACKGROUND } from '../../lib/branding';
 
 export function Landing() {
   const { user, isLoading } = useAuth();
@@ -25,7 +23,7 @@ export function Landing() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url(${HERO_BG})`
+            backgroundImage: `url(${HERO_BACKGROUND})`
           }}
           aria-hidden="true" />
         

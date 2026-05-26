@@ -16,7 +16,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Chatbot } from '../shared/Chatbot';
-import { APP_LOGO, APP_NAME } from '../../lib/branding';
+import { APP_LOGO, APP_NAME, FOOTER_LOGO } from '../../lib/branding';
 interface NavItem {
   label: string;
   path: string;
@@ -298,7 +298,7 @@ export function Layout({ children }: {children: React.ReactNode;}) {
           <div className="px-4 md:px-8 py-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="/assets/images/footerlogo.png"
+                src={FOOTER_LOGO}
                 alt="North Eastern Mindanao State University logo"
                 className="w-12 h-12 object-contain" />
               

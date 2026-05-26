@@ -3,8 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button, Input } from '../../components/ui';
-import { APP_LOGO, APP_NAME } from '../../lib/branding';
-const HERO_BG = '/assets/images/landingpagebackground.png';
+import { APP_LOGO, APP_NAME, HERO_BACKGROUND } from '../../lib/branding';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -43,7 +42,7 @@ export function Login() {
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${HERO_BG})`
+          backgroundImage: `url(${HERO_BACKGROUND})`
         }}
         aria-hidden="true" />
       
