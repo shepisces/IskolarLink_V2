@@ -1,6 +1,16 @@
-const API_BASE =
-  (import.meta as any).env?.VITE_API_BASE_URL?.toString?.() ||
-  '/api';
+const API_BASE = (
+  (import.meta as any).env?.VITE_API_BASE_URL?.toString?.() || '/api'
+)
+  .trim()
+  .replace(/\/$/, '');
+
+function apiUrl(path: string): string {
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  if (/^https?:\/\//i.test(API_BASE)) {
+    return `${API_BASE}${normalized}`;
+  }
+  return `${API_BASE}${normalized}`;
+}
 
 const AUTH_TOKEN_KEY = 'iskolarlink_api_token';
 
@@ -21,8 +31,10 @@ async function jsonFetch<T>(
   init?: RequestInit
 ): Promise<T> {
   const token = getApiToken();
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(apiUrl(path), {
     ...init,
+    method: init?.method ?? 'GET',
+    redirect: 'manual',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -31,10 +43,18 @@ async function jsonFetch<T>(
     },
   });
 
+  if (res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400)) {
+    throw new Error(
+      'API request was redirected. Use VITE_API_BASE_URL=/api (no trailing path).'
+    );
+  }
+
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const msg =
-      (data && (data.error || data.message)) || `Request failed (${res.status})`;
+      (data && (data.error || data.message)) ||
+      (typeof data === 'string' ? data : null) ||
+      `Request failed (${res.status})`;
     throw new Error(msg);
   }
   return data as T;
@@ -130,7 +150,7 @@ export type ApiNotification = {
 
 export async function apiLogin(email: string, password: string): Promise<ApiUser> {
   const r = await jsonFetch<{ ok: boolean; user: ApiUser; token?: string }>(
-    '/auth/login.php',
+    '/auth/login',
     {
       method: 'POST',
       body: JSON.stringify({ email, password }),
@@ -148,7 +168,7 @@ export async function apiRegister(
   password: string
 ): Promise<ApiUser> {
   const r = await jsonFetch<{ ok: boolean; user: ApiUser; token?: string }>(
-    '/auth/register.php',
+    '/auth/register',
     {
       method: 'POST',
       body: JSON.stringify({ name, email, password }),

@@ -26,7 +26,13 @@ export function Login() {
         replace: true
       });
     } catch (err) {
-      setError('Invalid email or password.');
+      const message =
+        err instanceof Error ? err.message : 'Invalid email or password.';
+      setError(
+        message.includes('Invalid email') || message.includes('401')
+          ? 'Invalid email or password.'
+          : message
+      );
     } finally {
       setIsSubmitting(false);
     }
